@@ -40,7 +40,27 @@ events.on('type-registered',function(type) {
             }
         }
 });
+var parseCredentials = function () {
+    return when.promise(function (resolve) {
+        var promises = [];
+        for (var i in activeConfig) {
+            var node = activeConfig[i];
+            if (!node._creds) {
+                continue;
+            }
+            var type = node.type;
+            var p = credentials.merge(node.id, type, node._creds);
+            promises.push(p);
+            delete node._creds;
+        }
+        when.settle(promises).then(function () {
+            credentials.save();
+            resolve();
+        });
 
+
+    });
+}
 
 var parseConfig = function() {
     missingTypes = [];
@@ -152,12 +172,15 @@ var flowNodes = module.exports = {
     getFlows: function() {
         return activeConfig;
     },
-    setFlows: function(conf) {
-        return storage.saveFlows(conf).then(function() {
-            return stopFlows().then(function() {
-                activeConfig = conf;
-                parseConfig();
-            });
+    setFlows: function (conf) {
+        return stopFlows().then(function () {
+            activeConfig = conf;
+            parseCredentials().then(function () {
+                return storage.saveFlows(activeConfig).then(function () {
+                    parseConfig();
+                });
+            })
+
         })
     },
     stopFlows: stopFlows

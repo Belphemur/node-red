@@ -182,6 +182,9 @@ RED.nodes = function() {
         for (var d in n._def.defaults) {
             node[d] = n[d];
         }
+        if(n._creds) {
+            node._creds = n._creds.send;
+        }
         if (n._def.category != "config") {
             node.x = n.x;
             node.y = n.y;
