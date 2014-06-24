@@ -106,7 +106,7 @@ module.exports = {
         restGET(dashedType);
     },
     /**
-     * Merge the new credentials with the existings one and save them into the file
+     * Merge the new credentials with the existings one
      * @param nodeID
      * @param nodeType
      * @param newCreds
@@ -136,13 +136,10 @@ module.exports = {
                 savedCredentials[cred] = newCreds[cred];
             }
             credentials[nodeID] = savedCredentials;
-
-            storage.saveCredentials(credentials).then(function () {
-                resolve();
-            }).otherwise(function (err) {
-                reject(err);
-            });
-
+            resolve();
         });
+    },
+    save:function() {
+        return storage.saveCredentials(credentials);
     }
 }
