@@ -175,7 +175,7 @@ var flowNodes = module.exports = {
     setFlows: function (conf) {
         return stopFlows().then(function () {
             activeConfig = conf;
-            parseCredentials().then(function () {
+            return parseCredentials().then(function () {
                 return storage.saveFlows(activeConfig).then(function () {
                     parseConfig();
                 });
