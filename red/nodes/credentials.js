@@ -107,41 +107,39 @@ module.exports = {
     },
     /**
      * Merge the new credentials with the existings one and save them into the file
-     * @param credentialsNodes - Credentials to be merged. format: [{id: NODE_ID, type: NODE_TYPE, creds: {CREDENTIALS}}, ...]
+     * @param nodeID
+     * @param nodeType
+     * @param newCreds
      * @returns {promise}
      */
-    merge: function (credentialsNodes) {
+    merge: function (nodeID, nodeType, newCreds) {
         return when.promise(function (resolve, reject) {
-            for (var key in credentialsNodes) {
-                var nodeID = credentialsNodes[key].id;
-                var newCreds = credentialsNodes[key].creds;
-                var savedCredentials = Credentials.get(nodeID) || {};
+            var savedCredentials = Credentials.get(nodeID) || {};
 
-                if (!isRegistered(credentialsNodes[key].type)) {
-                    reject('Credential Type ' + credentialsNodes[key].type + ' is not registered.');
-                    return;
-                }
-
-                var definition = getCredDef(credentialsNodes[key].type);
-                for (var cred in definition) {
-                    if (newCreds[cred] == undefined) {
-                        continue;
-                    }
-                    if (definition[cred].type == "password" && newCreds[cred] == '__PWRD__') {
-                        continue;
-                    }
-                    if (0 === newCreds[cred].length || /^\s*$/.test(newCreds[cred])) {
-                        delete savedCredentials[cred];
-                        continue;
-                    }
-                    savedCredentials[cred] = newCreds[cred];
-                }
-                credentials[nodeID] = savedCredentials;
-
+            if (!isRegistered(nodeType)) {
+                reject('Credential Type ' + nodeType + ' is not registered.');
+                return;
             }
+
+            var definition = getCredDef(nodeType);
+            for (var cred in definition) {
+                if (newCreds[cred] == undefined) {
+                    continue;
+                }
+                if (definition[cred].type == "password" && newCreds[cred] == '__PWRD__') {
+                    continue;
+                }
+                if (0 === newCreds[cred].length || /^\s*$/.test(newCreds[cred])) {
+                    delete savedCredentials[cred];
+                    continue;
+                }
+                savedCredentials[cred] = newCreds[cred];
+            }
+            credentials[nodeID] = savedCredentials;
+
             storage.saveCredentials(credentials).then(function () {
                 resolve();
-            }).otherwise(function(err) {
+            }).otherwise(function (err) {
                 reject(err);
             });
 
