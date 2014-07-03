@@ -44,14 +44,16 @@ var parseCredentials = function () {
     return when.promise(function (resolve) {
         var promises = [];
         for (var i in activeConfig) {
-            var node = activeConfig[i];
-            if (!node._creds) {
-                continue;
+            if (activeConfig.hasOwnProperty(i)) {
+                var node = activeConfig[i];
+                if (!node._creds) {
+                    continue;
+                }
+                var type = node.type;
+                var p = credentials.merge(node.id, type, node._creds);
+                promises.push(p);
+                delete node._creds;
             }
-            var type = node.type;
-            var p = credentials.merge(node.id, type, node._creds);
-            promises.push(p);
-            delete node._creds;
         }
         when.settle(promises).then(function () {
             credentials.save();

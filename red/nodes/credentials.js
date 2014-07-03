@@ -127,23 +127,25 @@ module.exports = {
 
             var definition = getCredDef(nodeType);
             for (var cred in definition) {
-                if (newCreds[cred] == undefined) {
-                    continue;
+                if (definition.hasOwnProperty(cred)) {
+                    if (newCreds[cred] === undefined) {
+                        continue;
+                    }
+                    if (definition[cred].type == "password" && newCreds[cred] == '__PWRD__') {
+                        continue;
+                    }
+                    if (0 === newCreds[cred].length || /^\s*$/.test(newCreds[cred])) {
+                        delete savedCredentials[cred];
+                        continue;
+                    }
+                    savedCredentials[cred] = newCreds[cred];
                 }
-                if (definition[cred].type == "password" && newCreds[cred] == '__PWRD__') {
-                    continue;
-                }
-                if (0 === newCreds[cred].length || /^\s*$/.test(newCreds[cred])) {
-                    delete savedCredentials[cred];
-                    continue;
-                }
-                savedCredentials[cred] = newCreds[cred];
             }
             credentials[nodeID] = savedCredentials;
             resolve();
         });
     },
-    save:function() {
+    save: function () {
         return storage.saveCredentials(credentials);
     }
 }
