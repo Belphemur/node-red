@@ -30,9 +30,9 @@ var log = module.exports = {
     },
     
     log: function(msg) {
-        for (var i in logHandlers) {
-            logHandlers[i].emit("log",msg);
-        }
+        logHandlers.forEach(function(handler) {
+            handler.emit("log",msg);
+        });
     }
 }
 

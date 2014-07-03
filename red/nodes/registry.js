@@ -88,8 +88,18 @@ function loadNode(nodeDir, nodeFn, nodeLabel) {
 function loadNodesFromModule(moduleDir,pkg) {
     var nodes = pkg['node-red'].nodes||{};
     var promises = [];
+    var iconDirs = [];
     for (var n in nodes) {
-        promises.push(loadNode(moduleDir,nodes[n],pkg.name+":"+n));
+        if (nodes.hasOwnProperty(n)) {
+            promises.push(loadNode(moduleDir,nodes[n],pkg.name+":"+n));
+            var iconDir = path.join(moduleDir,path.dirname(nodes[n]),"icons");
+            if (iconDirs.indexOf(iconDir) == -1) {
+                if (fs.existsSync(iconDir)) {
+                    events.emit("node-icon-dir",iconDir);
+                    iconDirs.push(iconDir);
+                }
+            }
+        }
     }
     return promises;
 }
@@ -250,8 +260,10 @@ function registerConfig(config) {
             var openTag = "<"+el.name;
             var closeTag = "</"+el.name+">";
             if (el.attribs) {
-                for (var i in el.attribs) {
-                    openTag += " "+i+'="'+el.attribs[i]+'"';
+                for (var j in el.attribs) {
+                    if (el.attribs.hasOwnProperty(j)) {
+                        openTag += " "+j+'="'+el.attribs[j]+'"';
+                    }
                 }
             }
             openTag += ">";
@@ -280,8 +292,8 @@ var typeRegistry = module.exports = {
             result += node_configs[i];
         }
         result += '<script type="text/javascript">';
-        for (var i=0;i<node_scripts.length;i++) {
-            result += node_scripts[i];
+        for (var j=0;j<node_scripts.length;j++) {
+            result += node_scripts[j];
         }
         result += '</script>';
         return result;

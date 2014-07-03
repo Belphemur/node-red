@@ -32,8 +32,8 @@ module.exports = function(RED) {
             var msg = {topic:node.filename};
             if (node.split) {
                 var strings = data.toString().split("\n");
-                for (s in strings) {
-                    if (strings[s] != "") {
+                for (var s in strings) {
+                    if (strings[s] !== "") {
                         msg.payload = strings[s];
                         node.send(msg);
                     }
@@ -50,7 +50,7 @@ module.exports = function(RED) {
         });
 
         this.on("close", function() {
-            if (tail) tail.kill();
+            if (tail) { tail.kill(); }
         });
     }
 
