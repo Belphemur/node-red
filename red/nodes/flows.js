@@ -40,27 +40,24 @@ events.on('type-registered',function(type) {
             }
         }
 });
-var parseCredentials = function () {
-    return when.promise(function (resolve) {
-        var promises = [];
-        for (var i in activeConfig) {
+var parseCredentials = function (config) {
+    return when.promise(function (resolve, defect) {
+        for (var i in config) {
             if (activeConfig.hasOwnProperty(i)) {
-                var node = activeConfig[i];
+                var node = config[i];
                 if (!node._creds) {
                     continue;
                 }
                 var type = node.type;
-                var p = credentials.merge(node.id, type, node._creds);
-                promises.push(p);
+                credentials.merge(node.id, type, node._creds);
                 delete node._creds;
             }
         }
-        when.settle(promises).then(function () {
-            credentials.save();
-            resolve();
+        credentials.save().then(function () {
+            resolve(config);
+        }).otherwise(function (err) {
+            defect(err);
         });
-
-
     });
 }
 
@@ -181,10 +178,10 @@ var flowNodes = module.exports = {
         return activeConfig;
     },
     setFlows: function (conf) {
-        return stopFlows().then(function () {
-            activeConfig = conf;
-            return parseCredentials().then(function () {
-                return storage.saveFlows(activeConfig).then(function () {
+        return parseCredentials(conf).then(function (confCredsRemoved) {
+            return storage.saveFlows(confCredsRemoved).then(function () {
+                return stopFlows().then(function () {
+                    activeConfig = confCredsRemoved;
                     parseConfig();
                 });
             })
