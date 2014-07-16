@@ -124,7 +124,15 @@ module.exports = function(RED) {
                     msg.res.jsonp(statusCode,msg.payload);
                 } else {
                     if (msg.res.get('content-length') == null) {
-                        msg.res.set('content-length', Buffer.byteLength(msg.payload));
+                        var len;
+                        if (msg.payload == null) {
+                            len = 0;
+                        } else if (typeof msg.payload == "number") {
+                            len = Buffer.byteLength(""+msg.payload);
+                        } else {
+                            len = Buffer.byteLength(msg.payload);
+                        }
+                        msg.res.set('content-length', len);
                     }
                     msg.res.send(statusCode,msg.payload);
                 }
