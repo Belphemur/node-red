@@ -114,36 +114,32 @@ module.exports = {
      * @param nodeID
      * @param nodeType
      * @param newCreds
-     * @returns {promise}
      */
     merge: function (nodeID, nodeType, newCreds) {
-        return when.promise(function (resolve, reject) {
-            var savedCredentials = Credentials.get(nodeID) || {};
+        var savedCredentials = Credentials.get(nodeID) || {};
 
-            if (!isRegistered(nodeType)) {
-                reject('Credential Type ' + nodeType + ' is not registered.');
-                return;
-            }
+        if (!isRegistered(nodeType)) {
+            util.log('Credential Type ' + nodeType + ' is not registered.');
+            return;
+        }
 
-            var definition = getCredDef(nodeType);
-            for (var cred in definition) {
-                if (definition.hasOwnProperty(cred)) {
-                    if (newCreds[cred] === undefined) {
-                        continue;
-                    }
-                    if (definition[cred].type == "password" && newCreds[cred] == '__PWRD__') {
-                        continue;
-                    }
-                    if (0 === newCreds[cred].length || /^\s*$/.test(newCreds[cred])) {
-                        delete savedCredentials[cred];
-                        continue;
-                    }
-                    savedCredentials[cred] = newCreds[cred];
+        var definition = getCredDef(nodeType);
+        for (var cred in definition) {
+            if (definition.hasOwnProperty(cred)) {
+                if (newCreds[cred] === undefined) {
+                    continue;
                 }
+                if (definition[cred].type == "password" && newCreds[cred] == '__PWRD__') {
+                    continue;
+                }
+                if (0 === newCreds[cred].length || /^\s*$/.test(newCreds[cred])) {
+                    delete savedCredentials[cred];
+                    continue;
+                }
+                savedCredentials[cred] = newCreds[cred];
             }
-            credentials[nodeID] = savedCredentials;
-            resolve();
-        });
+        }
+        credentials[nodeID] = savedCredentials;
     },
     save: function () {
         return storage.saveCredentials(credentials);
